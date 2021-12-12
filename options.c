@@ -48,6 +48,7 @@ int keep_dirlinks = 0;
 int copy_dirlinks = 0;
 int copy_links = 0;
 int write_devices = 0;
+int write_always = 0;
 int preserve_links = 0;
 int preserve_hard_links = 0;
 int preserve_acls = 0;
@@ -656,6 +657,7 @@ static struct poptOption long_options[] = {
   {"no-devices",       0,  POPT_ARG_VAL,    &preserve_devices, 0, 0, 0 },
   {"write-devices",    0,  POPT_ARG_VAL,    &write_devices, 1, 0, 0 },
   {"no-write-devices", 0,  POPT_ARG_VAL,    &write_devices, 0, 0, 0 },
+  {"write-always",     0,  POPT_ARG_NONE,   &write_always, 0, 0, 0 },
   {"specials",         0,  POPT_ARG_VAL,    &preserve_specials, 1, 0, 0 },
   {"no-specials",      0,  POPT_ARG_VAL,    &preserve_specials, 0, 0, 0 },
   {"links",           'l', POPT_ARG_VAL,    &preserve_links, 1, 0, 0 },
@@ -1899,7 +1901,7 @@ int parse_arguments(int *argc_p, const char ***argv_p)
 			return 0;
 		}
 	}
-
+	
 	if (version_opt_cnt) {
 		print_rsync_version(FINFO);
 		exit_cleanup(0);
@@ -2333,7 +2335,11 @@ int parse_arguments(int *argc_p, const char ***argv_p)
 		inplace = 1;
 	}
 
-	if (write_devices) {
+	if (write_always) {
+		write_devices = 1;
+	}
+	
+	if (write_devices || write_always) {
 		if (refused_inplace) {
 			create_refuse_error(refused_inplace);
 			return 0;
@@ -2430,6 +2436,8 @@ int parse_arguments(int *argc_p, const char ***argv_p)
 			}
 		}
 	}
+
+	
 
 	am_starting_up = 0;
 

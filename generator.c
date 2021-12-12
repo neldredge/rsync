@@ -40,6 +40,7 @@ extern int preserve_xattrs;
 extern int preserve_links;
 extern int preserve_devices;
 extern int write_devices;
+extern int write_always;
 extern int preserve_specials;
 extern int preserve_hard_links;
 extern int preserve_executability;
@@ -1715,7 +1716,10 @@ static void recv_generator(char *fname, struct file_struct *file, int ndx,
 
 	fnamecmp_type = FNAMECMP_FNAME;
 
-	if (statret == 0 && !(stype == FT_REG || (write_devices && stype == FT_DEVICE))) {
+	if (statret == 0 &&
+	    !(stype == FT_REG
+	      || write_always
+	      || (write_devices && stype == FT_DEVICE))) {
 		if (delete_item(fname, sx.st.st_mode, del_opts | DEL_FOR_FILE) != 0)
 			goto cleanup;
 		statret = -1;

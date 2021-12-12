@@ -1476,7 +1476,7 @@ OFF_T get_device_size(int fd, const char *fname)
 	OFF_T off = lseek(fd, 0, SEEK_END);
 
 	if (off == (OFF_T) -1) {
-		rsyserr(FERROR, errno, "failed to get device size via seek: %s", fname);
+		rsyserr(FERROR, errno, "FOO failed to get device size via seek: %s", fname);
 		return 0;
 	}
 	if (lseek(fd, 0, SEEK_SET) != 0)

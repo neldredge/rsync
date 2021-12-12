@@ -40,6 +40,7 @@ extern int relative_paths;
 extern int preserve_hard_links;
 extern int preserve_perms;
 extern int write_devices;
+extern int write_always;
 extern int preserve_xattrs;
 extern int do_fsync;
 extern int basis_dir_cnt;
@@ -385,7 +386,7 @@ static int receive_data(int f_in, char *fname_r, int fd_r, OFF_T size_r,
 	 * preallocate_files: total_size could have been an overestimate.
 	 *     Cut off any extra preallocated zeros from dest file. */
 	if ((inplace_sizing || preallocated_len > offset) && fd != -1 && !IS_DEVICE(file->mode)) {
-		if (do_ftruncate(fd, offset) < 0)
+		if (do_ftruncate(fd, offset) < 0 && !write_always)
 			rsyserr(FERROR_XFER, errno, "ftruncate failed on %s", full_fname(fname));
 	}
 #endif
@@ -808,12 +809,15 @@ int recv_files(int f_in, int f_out, char *local_name)
 			continue;
 		}
 
-		if (fd1 != -1 && !(S_ISREG(st.st_mode) || (write_devices && IS_DEVICE(st.st_mode)))) {
+		if (fd1 != -1 &&
+		    !(S_ISREG(st.st_mode)
+		      || write_always
+		      || (write_devices && IS_DEVICE(st.st_mode)))) {
 			close(fd1);
 			fd1 = -1;
 		}
 
-		if (fd1 != -1 && IS_DEVICE(st.st_mode) && st.st_size == 0)
+		if (fd1 != -1 && IS_DEVICE(st.st_mode) && st.st_size == 0 && !write_always)
 			st.st_size = get_device_size(fd1, fname);
 
 		/* If we're not preserving permissions, change the file-list's
